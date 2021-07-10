@@ -29,6 +29,7 @@ app.use(express.static('client'))
 const cors_app = require('cors');
 app.use(cors_app());
 
+//routes
 app.get("/",(req,res)=>{
     res.render('index.html');
   });
@@ -36,107 +37,78 @@ app.get("/",(req,res)=>{
 app.get("/url/emotion", (req,res) => {
   const analyzeParams = {
     'url': req.query.url,
-    'features': {
-      'entities': {
-        'emotion': true,
-        'sentiment': false,
-        'limit': 2,
-      },
-      'keywords': {
-        'emotion': true,
-        'sentiment': false,
-        'limit': 2,
+      'features': {
+        'emotion': {
+          'limit': 5
+        }
       }
-    }
-  };
+    };
   nlu.analyze(analyzeParams)
     .then(analysisResults => {
-      console.log(JSON.stringify(analysisResults, null, 2));
+      console.log(JSON.stringify(analysisResults.result.emotion.document, null, 2));
+      return res.send(analysisResults.result.emotion.document.emotion);
     })
     .catch(err => {
       console.log('error:', err);
     });
 });
-    // return res.send({"happy":"90","sad":"10"});
-
 
 app.get("/url/sentiment", (req,res) => {
  const analyzeParams = {
     'url': req.query.url,
     'features': {
-      'entities': {
-        'emotion': false,
-        'sentiment': true,
-        'limit': 2,
-      },
-      'keywords': {
-        'emotion': false,
-        'sentiment': true,
-        'limit': 2,
+      'sentiment': {
       }
     }
   };
   nlu.analyze(analyzeParams)
     .then(analysisResults => {
-      console.log(JSON.stringify(analysisResults, null, 2));
+      console.log(JSON.stringify(analysisResults.result, null, 2));
+      return res.send(analysisResults.result.sentiment.document.label)
     })
     .catch(err => {
       console.log('error:', err);
     });    
-    // return res.send("url sentiment for "+req.query.url);
 });
 
 app.get("/text/emotion", (req,res) => {
- const analyzeParams = {
+  const analyzeparams = {
     'text': req.query.text,
     'features': {
-      'entities': {
-        'emotion': true,
-        'sentiment': false,
-        'limit': 2,
-      },
-      'keywords': {
-        'emotion': true,
-        'sentiment': false,
-        'limit': 2,
-      }
+        'emotion': {
+            'limit': 5
+        }
+      } 
     }
-  };
-  nlu.analyze(analyzeParams)
-    .then(analysisResults => {
-      console.log(JSON.stringify(analysisResults, null, 2));
-    })
-    .catch(err => {
-      console.log('error:', err);
-    });    
-    // return res.send({"happy":"10","sad":"90"});
+
+    nlu.analyze(analyzeparams).then(analysisresults =>
+        {
+            console.log(JSON.stringify(analysisresults.result, null, 2));
+            return res.send(analysisresults.result.emotion.document.emotion);
+        }).catch( err =>
+            {
+                console.log(err)
+            });
 });
 
 app.get("/text/sentiment", (req,res) => {
  const analyzeParams = {
     'text': req.query.text,
     'features': {
-      'entities': {
-        'emotion': false,
-        'sentiment': true,
-        'limit': 2,
-      },
-      'keywords': {
-        'emotion': false,
-        'sentiment': true,
-        'limit': 2,
+      'sentiment': {
       }
     }
   };
   nlu.analyze(analyzeParams)
     .then(analysisResults => {
-      console.log(JSON.stringify(analysisResults, null, 2));
+      console.log(JSON.stringify(analysisResults.result, null, 2));
+      return res.send(analysisResults.result.sentiment.document.label);
     })
     .catch(err => {
       console.log('error:', err);
     });    
-    // return res.send("text sentiment for "+req.query.text);
 });
+
 
 let server = app.listen(8080, () => {
     console.log('Listening', server.address().port)
